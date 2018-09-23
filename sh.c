@@ -58,8 +58,6 @@ int sh( int argc, char **argv, char **envp )
       argCounter++;
     }
 
-    
-
     /* check for each built in command and implement */
 
      /*  else  program to exec */
