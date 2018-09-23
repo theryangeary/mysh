@@ -52,6 +52,8 @@ int sh( int argc, char **argv, char **envp )
        /* find it */
        /* do fork(), execve() and waitpid() */
 
+      if(1) {
+      }
       else
         fprintf(stderr, "%s: Command not found.\n", args[0]);
     }
