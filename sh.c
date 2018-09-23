@@ -49,6 +49,15 @@ int sh( int argc, char **argv, char **envp )
     command = strtok(commandline, space);
     command[strcspn(command, "\n")] = 0; // strip newline if it exists
 
+    char* newArg;
+    int argCounter = 0;
+    while (newArg != NULL) {
+      newArg = strtok(NULL, space);
+      args[argCounter] = newArg;
+      newArg[strcspn(newArg, "\n")] = 0; // strip newline if it exists
+      argCounter++;
+    }
+
     
 
     /* check for each built in command and implement */
