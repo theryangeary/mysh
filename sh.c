@@ -59,6 +59,32 @@ int sh( int argc, char **argv, char **envp )
     }
 
     /* check for each built in command and implement */
+    if (0 == strcmp(command, "exit")) {
+    }
+    else if (0 == strcmp(command, "which")) {
+    }
+    else if (0 == strcmp(command, "where")) {
+    }
+    else if (0 == strcmp(command, "cd")) {
+    }
+    else if (0 == strcmp(command, "pwd")) {
+    }
+    else if (0 == strcmp(command, "list")) {
+    }
+    else if (0 == strcmp(command, "pid")) {
+    }
+    else if (0 == strcmp(command, "kill")) {
+    }
+    else if (0 == strcmp(command, "prompt")) {
+    }
+    else if (0 == strcmp(command, "printenv")) {
+    }
+    else if (0 == strcmp(command, "alias")) {
+    }
+    else if (0 == strcmp(command, "history")) {
+    }
+    else if (0 == strcmp(command, "setenv")) {
+    }
 
      /*  else  program to exec */
     {
