@@ -44,6 +44,12 @@ int sh( int argc, char **argv, char **envp )
     /* print your prompt */
 
     /* get command line and process */
+    fgets(commandline,  MAX_CANON, stdin);
+    const char space[2] = " ";
+    command = strtok(commandline, space);
+    command[strcspn(command, "\n")] = 0; // strip newline if it exists
+
+    
 
     /* check for each built in command and implement */
 
