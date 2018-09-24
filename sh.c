@@ -91,6 +91,11 @@ int sh( int argc, char **argv, char **envp )
       free(result);
     }
     else if (0 == strcmp(command, "where")) {
+      printf("where\n");
+      if (NULL == args[0]) {
+	continue;
+      }
+      where(args[0], pathlist);
     }
     else if (0 == strcmp(command, "cd")) {
     }
@@ -153,6 +158,24 @@ char *which(char *command, struct pathelement *pathlist )
 char *where(char *command, struct pathelement *pathlist )
 {
   /* similarly loop through finding all locations of command */
+  while (NULL != pathlist->next) {
+    DIR* folder = opendir(pathlist->element);
+    if (NULL != folder) {
+      struct dirent* dirEntry;
+      while (NULL != (dirEntry = readdir(folder))) {
+	if (0 == strcmp(command, dirEntry->d_name)) {
+	  char* result = (char*) malloc(sizeof(char) * (strlen(pathlist->element) + strlen(command)));
+	  strcat(result, pathlist->element);
+	  strcat(result, "/");
+	  strcat(result, command);
+	  printf("%s\n", result);
+	  free(result);
+	}
+      }
+    }
+    pathlist = pathlist->next;
+  }
+  return NULL;
 } /* where() */
 
 void list ( char *dir )
