@@ -58,13 +58,36 @@ int sh( int argc, char **argv, char **envp )
     }
 
     /* check for each built in command and implement */
+    if (
+	0 == strcmp(command, "exit") ||
+	0 == strcmp(command, "which") ||
+	0 == strcmp(command, "where") ||
+	0 == strcmp(command, "cd") ||
+	0 == strcmp(command, "pwd") ||
+	0 == strcmp(command, "list") ||
+	0 == strcmp(command, "pid") ||
+	0 == strcmp(command, "kill") ||
+	0 == strcmp(command, "prompt") ||
+	0 == strcmp(command, "printenv") ||
+	0 == strcmp(command, "alias") ||
+	0 == strcmp(command, "history") ||
+	0 == strcmp(command, "setenv")) {
+      printf("Executing built-in ");
+    }
+
     if (0 == strcmp(command, "exit")) {
+      return 0;
     }
     else if (0 == strcmp(command, "which")) {
+      printf("which\n");
+      if (NULL == args[0]) {
+	continue;
+      }
       char* result = which(args[0], pathlist);
       if (NULL != result) {
 	printf("%s\n", result);
       }
+      free(result);
     }
     else if (0 == strcmp(command, "where")) {
     }
@@ -113,8 +136,7 @@ char *which(char *command, struct pathelement *pathlist )
       struct dirent* dirEntry;
       while (NULL != (dirEntry = readdir(folder))) {
 	if (0 == strcmp(command, dirEntry->d_name)) {
-	  char* result;
-	  result[0] = '\0';
+	  char* result = (char*) malloc(sizeof(char) * (strlen(pathlist->element) + strlen(command)));
 	  strcat(result, pathlist->element);
 	  strcat(result, "/");
 	  strcat(result, command);
