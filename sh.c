@@ -100,6 +100,8 @@ int sh( int argc, char **argv, char **envp )
     else if (0 == strcmp(command, "cd")) {
     }
     else if (0 == strcmp(command, "pwd")) {
+      printf("pwd\n");
+      printf("%s\n", pwd);
     }
     else if (0 == strcmp(command, "list")) {
     }
