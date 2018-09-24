@@ -76,6 +76,7 @@ int sh( int argc, char **argv, char **envp )
     }
 
     if (0 == strcmp(command, "exit")) {
+      printf("exit\n");
       return 0;
     }
     else if (0 == strcmp(command, "which")) {
