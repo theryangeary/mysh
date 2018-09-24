@@ -85,18 +85,18 @@ int sh( int argc, char **argv, char **envp )
     else if (0 == strcmp(command, "which")) {
       printf("which\n");
       if (NULL == args[0]) {
-	continue;
+        continue;
       }
       char* result = which(args[0], pathlist);
       if (NULL != result) {
-	printf("%s\n", result);
+        printf("%s\n", result);
       }
       free(result);
     }
     else if (0 == strcmp(command, "where")) {
       printf("where\n");
       if (NULL == args[0]) {
-	continue;
+        continue;
       }
       where(args[0], pathlist);
     }
