@@ -45,16 +45,15 @@ int sh( int argc, char **argv, char **envp )
 
     /* get command line and process */
     fgets(commandline,  MAX_CANON, stdin);
+    commandline[strcspn(commandline, "\n")] = 0;// strip newline if it exists
     const char space[2] = " ";
     command = strtok(commandline, space);
-    command[strcspn(command, "\n")] = 0; // strip newline if it exists
 
-    char* newArg;
+    char* newArg = command;
     int argCounter = 0;
     while (newArg != NULL) {
       newArg = strtok(NULL, space);
       args[argCounter] = newArg;
-      newArg[strcspn(newArg, "\n")] = 0; // strip newline if it exists
       argCounter++;
     }
 
@@ -62,6 +61,10 @@ int sh( int argc, char **argv, char **envp )
     if (0 == strcmp(command, "exit")) {
     }
     else if (0 == strcmp(command, "which")) {
+      char* result = which(args[0], pathlist);
+      if (NULL != result) {
+	printf("%s\n", result);
+      }
     }
     else if (0 == strcmp(command, "where")) {
     }
@@ -104,7 +107,24 @@ char *which(char *command, struct pathelement *pathlist )
 {
    /* loop through pathlist until finding command and return it.  Return
    NULL when not found. */
-
+  while (NULL != pathlist->next) {
+    DIR* folder = opendir(pathlist->element);
+    if (NULL != folder) {
+      struct dirent* dirEntry;
+      while (NULL != (dirEntry = readdir(folder))) {
+	if (0 == strcmp(command, dirEntry->d_name)) {
+	  char* result;
+	  result[0] = '\0';
+	  strcat(result, pathlist->element);
+	  strcat(result, "/");
+	  strcat(result, command);
+	  return result;
+	}
+      }
+    }
+    pathlist = pathlist->next;
+  }
+  return NULL;
 } /* which() */
 
 char *where(char *command, struct pathelement *pathlist )
