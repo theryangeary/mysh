@@ -45,6 +45,9 @@ int sh( int argc, char **argv, char **envp )
 
     /* get command line and process */
     fgets(commandline,  MAX_CANON, stdin);
+    if (0 == strcmp(commandline, "\n")) {
+      continue;
+    }
     commandline[strcspn(commandline, "\n")] = 0;// strip newline if it exists
     const char space[2] = " ";
     command = strtok(commandline, space);
