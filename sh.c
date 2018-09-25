@@ -137,7 +137,6 @@ int sh( int argc, char **argv, char **envp )
         strcat(targetDir, args[0]);
       }
       DIR* folder = opendir(targetDir);
-
       closedir(folder);
       if (NULL != folder) {
         prevDir = (char*) malloc(sizeof(pwd));
@@ -150,7 +149,6 @@ int sh( int argc, char **argv, char **envp )
       else {
         printf("Something went wrong\n");
       }
-      free(targetDir);
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
