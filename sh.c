@@ -9,24 +9,29 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <errno.h>
 #include "sh.h"
+
+#define BUFFERSIZE 256
 
 int sh( int argc, char **argv, char **envp )
 {
   char *prompt = calloc(PROMPTMAX, sizeof(char));
   char *commandline = calloc(MAX_CANON, sizeof(char));
-  char *command, *arg, *commandpath, *p, *pwd, *owd;
+  char *command, *arg, *commandpath, *p, *pwd, *owd, *prevDir;
   char **args = calloc(MAXARGS, sizeof(char*));
   int uid, i, status, argsct, go = 1;
   struct passwd *password_entry;
   char *homedir;
   struct pathelement *pathlist;
+  char* upDir = "..";
+  char* thisDir = ".";
 
   uid = getuid();
   password_entry = getpwuid(uid);               /* get passwd info */
   homedir = password_entry->pw_dir;		/* Home directory to start
 						  out with*/
-     
+
   if ( (pwd = getcwd(NULL, PATH_MAX+1)) == NULL )
   {
     perror("getcwd");
@@ -35,6 +40,8 @@ int sh( int argc, char **argv, char **envp )
   owd = calloc(strlen(pwd) + 1, sizeof(char));
   memcpy(owd, pwd, strlen(pwd));
   prompt[0] = ' '; prompt[1] = '\0';
+  prevDir = (char*) malloc(strlen(pwd));
+  strcpy(prevDir, pwd);
 
   /* Put PATH into a linked list */
   pathlist = get_path();
@@ -102,16 +109,16 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
-      char* targetDir;
-      char* upDir = "..";
-      char* thisDir = ".";
-      if (args[0][0] == '\0') {
-        targetDir = (char*) malloc(sizeof(strlen(homedir)));
-        targetDir = homedir;
+      char* targetDir = calloc(sizeof(char), BUFFERSIZE);
+      if (args[0] == NULL) {
+        strcpy(targetDir, homedir);
+      }
+      else if ('~' == args[0][0] ) {
+        strcat(targetDir, homedir);
+        strcat(targetDir, args[0]+1);
       }
       else if ('/' == args[0][0]) {
-        targetDir = (char*) malloc(sizeof(strlen(args[0])));
-        targetDir = args[0];
+        strcpy(targetDir, args[0]);
       }
       else if (0 == strcmp(thisDir, args[0])) {
         continue;
@@ -121,19 +128,29 @@ int sh( int argc, char **argv, char **envp )
         strncpy(targetDir, pwd, strlen(pwd) - strlen(lastSlash));
         targetDir[strlen(pwd) - strlen(lastSlash)] = '\0';
       }
+      else if ('-' == args[0][0]) {
+        strcpy(targetDir, prevDir);
+      }
       else {
-        targetDir = (char*) malloc(sizeof(strlen(pwd) + strlen(args[0] + 1)));
         strcat(targetDir, pwd);
         strcat(targetDir, "/");
         strcat(targetDir, args[0]);
       }
       DIR* folder = opendir(targetDir);
+
+      closedir(folder);
       if (NULL != folder) {
+        prevDir = (char*) malloc(sizeof(pwd));
+        strcpy(prevDir, pwd);
         strcpy(pwd, targetDir);
       }
-      else {
+      else if (ENOENT == errno) {
         printf("No such directory: %s\n", targetDir);
       }
+      else {
+        printf("Something went wrong\n");
+      }
+      free(targetDir);
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
