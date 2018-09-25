@@ -109,25 +109,9 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
-      int result = -1;
-      if (NULL == args[0] || '~' == args[0][0]) {
-        result = chdir(homedir);
-      }
-      else if ('-' == args[0][0]) {
-        result = chdir(prevDir);
-      }
-      else {
-        result = chdir(args[0]);
-      }
-      if (0 == result) {
-        prevDir = (char*) malloc(sizeof(pwd));
-        strcpy(prevDir, pwd);
-        pwd = calloc(sizeof(char), BUFFERSIZE);
-        getcwd(pwd, BUFFERSIZE);
-      }
-      else {
-        printf("Something went wrong!");
-      }
+      prevDir = calloc(sizeof(char), BUFFERSIZE);
+      prevDir = cd(args, homedir, prevDir, pwd);
+      printf("%s\n", prevDir);
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
@@ -176,6 +160,33 @@ int sh( int argc, char **argv, char **envp )
   }
   return 0;
 } /* sh() */
+
+char* cd(char **args, char* homedir, char* prevDir, char* pwd) {
+  int result = -1;
+  char* pd;
+  if (NULL == args[0] || '~' == args[0][0]) {
+    result = chdir(homedir);
+  }
+  else if ('-' == args[0][0]) {
+    if (NULL == prevDir || '\0' == prevDir[0]) {
+      return NULL;
+    }
+    result = chdir(prevDir);
+  }
+  else {
+    result = chdir(args[0]);
+  }
+  if (0 == result) {
+    pd = (char*) malloc(sizeof(pwd));
+    strcpy(pd, pwd);
+    pwd = calloc(sizeof(char), BUFFERSIZE);
+    getcwd(pwd, BUFFERSIZE);
+  }
+  else {
+    printf("Something went wrong!\n");
+  }
+  return pd;
+}
 
 char *which(char *command, struct pathelement *pathlist )
 {
