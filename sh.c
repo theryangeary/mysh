@@ -109,52 +109,44 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
-      char* targetDir = calloc(sizeof(char), BUFFERSIZE);
-      if (args[0] == NULL) {
-        strcpy(targetDir, homedir);
-      }
-      else if ('~' == args[0][0] ) {
-        strcat(targetDir, homedir);
-        strcat(targetDir, args[0]+1);
-      }
-      else if ('/' == args[0][0]) {
-        strcpy(targetDir, args[0]);
-      }
-      else if (0 == strcmp(thisDir, args[0])) {
-        continue;
-      }
-      else if (0 == strcmp(upDir, args[0])) {
-        char* lastSlash = strrchr(pwd, '/');
-        strncpy(targetDir, pwd, strlen(pwd) - strlen(lastSlash));
-        targetDir[strlen(pwd) - strlen(lastSlash)] = '\0';
+      int result = -1;
+      if (NULL == args[0] || '~' == args[0][0]) {
+        result = chdir(homedir);
       }
       else if ('-' == args[0][0]) {
-        strcpy(targetDir, prevDir);
+        result = chdir(prevDir);
       }
       else {
-        strcat(targetDir, pwd);
-        strcat(targetDir, "/");
-        strcat(targetDir, args[0]);
+        result = chdir(args[0]);
       }
-      DIR* folder = opendir(targetDir);
-      closedir(folder);
-      if (NULL != folder) {
+      if (0 == result) {
         prevDir = (char*) malloc(sizeof(pwd));
         strcpy(prevDir, pwd);
-        strcpy(pwd, targetDir);
-      }
-      else if (ENOENT == errno) {
-        printf("No such directory: %s\n", targetDir);
+        pwd = calloc(sizeof(char), BUFFERSIZE);
+        getcwd(pwd, BUFFERSIZE);
       }
       else {
-        printf("Something went wrong\n");
+        printf("Something went wrong!");
       }
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
+      getcwd(pwd, BUFFERSIZE);
       printf("%s\n", pwd);
     }
     else if (0 == strcmp(command, "list")) {
+      printf("list\n");
+      if (NULL == args[0]) {
+        // print current dir files
+        DIR* folder = opendir(pwd);
+        struct dirent* dirEntry;
+        while (NULL != (dirEntry = readdir(folder))) {
+          printf("%s\n", dirEntry->d_name);
+        }
+      }
+      else {
+        // print files in args[] directories
+      }
     }
     else if (0 == strcmp(command, "pid")) {
     }
@@ -216,14 +208,14 @@ char *where(char *command, struct pathelement *pathlist )
     if (NULL != folder) {
       struct dirent* dirEntry;
       while (NULL != (dirEntry = readdir(folder))) {
-	if (0 == strcmp(command, dirEntry->d_name)) {
-	  char* result = (char*) malloc(sizeof(char) * (strlen(pathlist->element) + strlen(command)));
-	  strcat(result, pathlist->element);
-	  strcat(result, "/");
-	  strcat(result, command);
-	  printf("%s\n", result);
-	  free(result);
-	}
+        if (0 == strcmp(command, dirEntry->d_name)) {
+          char* result = (char*) malloc(sizeof(char) * (strlen(pathlist->element) + strlen(command)));
+          strcat(result, pathlist->element);
+          strcat(result, "/");
+          strcat(result, command);
+          printf("%s\n", result);
+          free(result);
+        }
       }
     }
     pathlist = pathlist->next;
