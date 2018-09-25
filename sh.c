@@ -101,6 +101,39 @@ int sh( int argc, char **argv, char **envp )
       where(args[0], pathlist);
     }
     else if (0 == strcmp(command, "cd")) {
+      printf("cd\n");
+      char* targetDir;
+      char* upDir = "..";
+      char* thisDir = ".";
+      if (args[0][0] == '\0') {
+        targetDir = (char*) malloc(sizeof(strlen(homedir)));
+        targetDir = homedir;
+      }
+      else if ('/' == args[0][0]) {
+        targetDir = (char*) malloc(sizeof(strlen(args[0])));
+        targetDir = args[0];
+      }
+      else if (0 == strcmp(thisDir, args[0])) {
+        continue;
+      }
+      else if (0 == strcmp(upDir, args[0])) {
+        char* lastSlash = strrchr(pwd, '/');
+        strncpy(targetDir, pwd, strlen(pwd) - strlen(lastSlash));
+        targetDir[strlen(pwd) - strlen(lastSlash)] = '\0';
+      }
+      else {
+        targetDir = (char*) malloc(sizeof(strlen(pwd) + strlen(args[0] + 1)));
+        strcat(targetDir, pwd);
+        strcat(targetDir, "/");
+        strcat(targetDir, args[0]);
+      }
+      DIR* folder = opendir(targetDir);
+      if (NULL != folder) {
+        strcpy(pwd, targetDir);
+      }
+      else {
+        printf("No such directory: %s\n", targetDir);
+      }
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
