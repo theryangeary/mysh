@@ -111,7 +111,6 @@ int sh( int argc, char **argv, char **envp )
       printf("cd\n");
       prevDir = calloc(sizeof(char), BUFFERSIZE);
       prevDir = cd(args, homedir, prevDir, pwd);
-      printf("%s\n", prevDir);
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
