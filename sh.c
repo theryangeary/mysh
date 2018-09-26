@@ -66,6 +66,7 @@ int sh( int argc, char **argv, char **envp )
       args[argCounter] = newArg;
       argCounter++;
     }
+    argsct = argCounter;
 
     /* check for each built in command and implement */
     if (
@@ -110,6 +111,7 @@ int sh( int argc, char **argv, char **envp )
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
       cd(args[0], homedir, prevDir, pwd);
+      printf("pwd: %s", pwd);
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
@@ -124,23 +126,13 @@ int sh( int argc, char **argv, char **envp )
       }
       else {
         // print files in args[] directories
-        char* pwdCopy = calloc(sizeof(char), strlen(pwd));
-        for (int i = 0; i < argc; i++) {
-          if ('~' == args[i][0]) {
-            args[i]++;
-            char* path = calloc(sizeof(char), strlen(homedir) + strlen(args[i]) + 1);
-            strcat(path, homedir);
-            strcat(path, args[i]);
-            cd(path, homedir, prevDir, pwd);
-            getcwd(pwd, BUFFERSIZE);
-          }
-          else {
-            cd(args[i], homedir, prevDir, pwd);
-            getcwd(pwd, BUFFERSIZE);
-          }
+        char* prevCopy = calloc(sizeof(char), strlen(prevDir));
+        strcpy(prevCopy, prevDir);
+        for (int i = 0; i < argsct - 1; i++) {
+          cd(args[i], homedir, prevCopy, pwd);
+          printf("\n%s:\n\n", pwd);
           list(pwd);
-          cd(pwdCopy, homedir, prevDir, pwd);
-          getcwd(pwd, BUFFERSIZE);
+          cd("-", homedir, prevCopy, pwd);
         }
       }
     }
@@ -200,13 +192,14 @@ void cd(char *args, char* homedir, char* prevDir, char* pwd) {
   if (0 == result) {
     strcpy(prevDir, pd);
     prevDir[strlen(pd)] = '\0';
-    pwd = calloc(sizeof(char), BUFFERSIZE);
-    getcwd(pwd, BUFFERSIZE);
+    char* newPwd = calloc(sizeof(char), BUFFERSIZE);
+    getcwd(newPwd, BUFFERSIZE);
+    strcpy(pwd, newPwd);
+    pwd[strlen(newPwd)] = '\0';
   }
   else {
     perror("Something went wrong");
   }
-  getcwd(pwd, BUFFERSIZE);
 }
 
 char *which(char *command, struct pathelement *pathlist )
