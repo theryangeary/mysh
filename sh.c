@@ -144,6 +144,17 @@ int sh( int argc, char **argv, char **envp )
       printf("%d\n", pid);
     }
     else if (0 == strcmp(command, "kill")) {
+      printf("kill\n");
+      if (2 == argsct) {
+        int pid = atoi(args[0]);
+        kill(pid, 15);
+      }
+      else if (3 == argsct) {
+        int pid = atoi(args[0]);
+        args[1]++;
+        int sig = atoi(args[1]);
+        kill(pid, sig);
+      }
     }
     else if (0 == strcmp(command, "prompt")) {
     }
