@@ -111,7 +111,6 @@ int sh( int argc, char **argv, char **envp )
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
       cd(args[0], homedir, prevDir, pwd);
-      printf("pwd: %s", pwd);
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
@@ -137,6 +136,9 @@ int sh( int argc, char **argv, char **envp )
       }
     }
     else if (0 == strcmp(command, "pid")) {
+      printf("pid\n");
+      int pid = getpid();
+      printf("%d\n", pid);
     }
     else if (0 == strcmp(command, "kill")) {
     }
