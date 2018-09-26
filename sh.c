@@ -26,6 +26,7 @@ int sh( int argc, char **argv, char **envp )
   struct pathelement *pathlist;
   char* upDir = "..";
   char* thisDir = ".";
+  char* space = " ";
 
   uid = getuid();
   password_entry = getpwuid(uid);               /* get passwd info */
@@ -40,7 +41,7 @@ int sh( int argc, char **argv, char **envp )
   owd = calloc(strlen(pwd) + 1, sizeof(char));
   memcpy(owd, pwd, strlen(pwd));
   prompt[0] = ' '; prompt[1] = '\0';
-  prevDir = (char*) malloc(strlen(pwd));
+  prevDir = (char*) malloc(BUFFERSIZE);
   strcpy(prevDir, pwd);
 
   /* Put PATH into a linked list */
@@ -49,6 +50,7 @@ int sh( int argc, char **argv, char **envp )
   while ( go )
   {
     /* print your prompt */
+    printf("%s[%s]>", prompt, pwd);
 
     /* get command line and process */
     fgets(commandline,  MAX_CANON, stdin);
@@ -88,7 +90,7 @@ int sh( int argc, char **argv, char **envp )
 
     if (0 == strcmp(command, "exit")) {
       printf("exit\n");
-      return 0;
+      break;
     }
     else if (0 == strcmp(command, "which")) {
       printf("which\n");
@@ -164,6 +166,14 @@ int sh( int argc, char **argv, char **envp )
         fprintf(stderr, "%s: Command not found.\n", args[0]);
     }
   }
+  free(prompt);
+  free(commandline);
+  free(owd);
+  free(prevDir);
+  for (int i = 0; i < MAXARGS; i++) {
+    free(args[i]);
+  }
+  free(args);
   return 0;
 } /* sh() */
 
@@ -181,6 +191,7 @@ void cd(char *args, char* homedir, char* prevDir, char* pwd) {
     strcat(path, homedir);
     strcat(path, args);
     result = chdir(path);
+    free(path);
   }
   else if ('-' == args[0]) {
     if (NULL == prevDir || '\0' == prevDir[0]) {
@@ -198,10 +209,12 @@ void cd(char *args, char* homedir, char* prevDir, char* pwd) {
     getcwd(newPwd, BUFFERSIZE);
     strcpy(pwd, newPwd);
     pwd[strlen(newPwd)] = '\0';
+    free(newPwd);
   }
   else {
     perror("Something went wrong");
   }
+  free(pd);
 }
 
 char *which(char *command, struct pathelement *pathlist )
@@ -213,13 +226,13 @@ char *which(char *command, struct pathelement *pathlist )
     if (NULL != folder) {
       struct dirent* dirEntry;
       while (NULL != (dirEntry = readdir(folder))) {
-	if (0 == strcmp(command, dirEntry->d_name)) {
-	  char* result = (char*) malloc(sizeof(char) * (strlen(pathlist->element) + strlen(command)));
-	  strcat(result, pathlist->element);
-	  strcat(result, "/");
-	  strcat(result, command);
-	  return result;
-	}
+        if (0 == strcmp(command, dirEntry->d_name)) {
+          char* result = (char*) malloc(sizeof(char) * (strlen(pathlist->element) + strlen(command)));
+          strcat(result, pathlist->element);
+          strcat(result, "/");
+          strcat(result, command);
+          return result;
+        }
       }
     }
     pathlist = pathlist->next;
