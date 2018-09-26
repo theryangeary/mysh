@@ -110,7 +110,6 @@ int sh( int argc, char **argv, char **envp )
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
       cd(args[0], homedir, prevDir, pwd);
-      printf("prevDir: %s\n", prevDir);
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
