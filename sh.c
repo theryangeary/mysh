@@ -127,7 +127,7 @@ int sh( int argc, char **argv, char **envp )
       }
       else {
         // print files in args[] directories
-        char* prevCopy = calloc(sizeof(char), strlen(prevDir));
+        char* prevCopy = calloc(sizeof(char), strlen(prevDir) + 1);
         strcpy(prevCopy, prevDir);
         for (int i = 0; i < argsct - 1; i++) {
           cd(args[i], homedir, prevCopy, pwd);
@@ -135,6 +135,7 @@ int sh( int argc, char **argv, char **envp )
           list(pwd);
           cd("-", homedir, prevCopy, pwd);
         }
+        free(prevCopy);
       }
     }
     else if (0 == strcmp(command, "pid")) {
@@ -169,6 +170,7 @@ int sh( int argc, char **argv, char **envp )
   free(prompt);
   free(commandline);
   free(owd);
+  free(pwd);
   free(prevDir);
   for (int i = 0; i < MAXARGS; i++) {
     free(args[i]);
