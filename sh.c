@@ -172,9 +172,6 @@ int sh( int argc, char **argv, char **envp )
   free(owd);
   free(pwd);
   free(prevDir);
-  for (int i = 0; i < MAXARGS; i++) {
-    free(args[i]);
-  }
   free(args);
   return 0;
 } /* sh() */
