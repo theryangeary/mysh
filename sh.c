@@ -221,7 +221,7 @@ int sh( int argc, char **argv, char **envp )
 
       }
       else
-        fprintf(stderr, "%s: Command not found.\n", args[0]);
+        fprintf(stderr, "%s: Command not found.\n", command);
     }
   }
   free(prompt);
