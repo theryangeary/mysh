@@ -187,6 +187,18 @@ int sh( int argc, char **argv, char **envp )
     else if (0 == strcmp(command, "history")) {
     }
     else if (0 == strcmp(command, "setenv")) {
+      printf("setenv\n");
+      if (NULL != args[1]) {
+        setenv(args[0], args[1], 1);
+      }
+      else if (NULL != args[0]) {
+        char* empty = "";
+        int result = setenv(args[0], empty, 0);
+        printf("%d\n", result);
+      }
+      else {
+        printenv(envp);
+      }
     }
 
     else {
