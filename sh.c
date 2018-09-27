@@ -170,6 +170,17 @@ int sh( int argc, char **argv, char **envp )
       }
     }
     else if (0 == strcmp(command, "printenv")) {
+      printf("printenv\n");
+      if (NULL != args[1]) {
+        printf("printenv: Too many arguments.\n");
+      }
+      else if (NULL != args[0]) {
+        char* result = getenv(args[0]);
+        printf("%s\n", result);
+      }
+      else {
+        printenv(envp);
+      }
     }
     else if (0 == strcmp(command, "alias")) {
     }
@@ -327,3 +338,8 @@ void list ( char *dir )
   closedir(folder);
 } /* list() */
 
+void printenv(char** envp) {
+  for (int i = 0; NULL != envp[i]; i++) {
+    printf("%s\n", envp[i]);
+  }
+}
