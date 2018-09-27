@@ -42,7 +42,7 @@ int sh( int argc, char **argv, char **envp )
   }
   owd = calloc(strlen(pwd) + 1, sizeof(char));
   memcpy(owd, pwd, strlen(pwd));
-  prompt[0] = ' '; prompt[1] = '\0';
+  prompt[0] = '\0';
   prevDir = (char*) malloc(BUFFERSIZE);
   strcpy(prevDir, pwd);
 
@@ -52,7 +52,7 @@ int sh( int argc, char **argv, char **envp )
   while ( go )
   {
     /* print your prompt */
-    printf("%s[%s]>", prompt, pwd);
+    printf("%s [%s]>", prompt, pwd);
 
     /* get command line and process */
     fgets(commandline,  MAX_CANON, stdin);
@@ -159,6 +159,15 @@ int sh( int argc, char **argv, char **envp )
       }
     }
     else if (0 == strcmp(command, "prompt")) {
+      printf("prompt\n");
+      if (NULL != args[0]) {
+        strncpy(prompt, args[0], PROMPTMAX);
+      }
+      else {
+        printf("prompt: ");
+        fgets(prompt, PROMPTMAX, stdin);
+        prompt[strlen(prompt) - 1] = '\0';
+      }
     }
     else if (0 == strcmp(command, "printenv")) {
     }
