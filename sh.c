@@ -202,7 +202,11 @@ int sh( int argc, char **argv, char **envp )
         pid_t pid = fork();
         if (pid > 0) {
           int status;
+          int outputStatus = 0;
           waitpid(pid, &status, 0);
+          if (0 != (outputStatus = WEXITSTATUS(status))) {
+            printf("%d\n", outputStatus);
+          }
         }
         else {
           char** const envp = {NULL};
