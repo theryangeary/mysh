@@ -20,10 +20,12 @@ int sh( int argc, char **argv, char **envp )
   char *commandline = calloc(MAX_CANON, sizeof(char));
   char *command, *arg, *commandpath, *p, *pwd, *owd, *prevDir;
   char **args = calloc(MAXARGS, sizeof(char*));
+  char **execargs = calloc(MAXARGS + 1, sizeof(char*));
   int uid, i, status, argsct, go = 1;
   struct passwd *password_entry;
   char *homedir;
   struct pathelement *pathlist;
+  char* rootDir = "/";
   char* upDir = "..";
   char* thisDir = ".";
   char* space = " ";
@@ -167,12 +169,43 @@ int sh( int argc, char **argv, char **envp )
     else if (0 == strcmp(command, "setenv")) {
     }
 
-     /*  else  program to exec */
-    {
-       /* find it */
-       /* do fork(), execve() and waitpid() */
+    else {
+      /*  else  program to exec */
+      char* com;
+      /* find it */
+      if (0 == strncmp(thisDir, command, 1)) {
+        strcpy(com, command);
+      }
+      else if (0 == strncmp(upDir, command, 2)) {
+        strcpy(com, command);
+      }
+      else if (0 == strncmp(rootDir, command, 1)) {
+        strcpy(com, command);
+      }
+      else {
+        com = which(command, pathlist);
+      }
+      /* do fork(), execve() and waitpid() */
 
-      if(1) {
+      if(NULL != com) {
+        printf("Executing %s\n", com);
+        pid_t parent = getpid();
+        pid_t pid = fork();
+        if (pid > 0) {
+          int status;
+          waitpid(pid, &status, 0);
+        }
+        else {
+          char** const envp = {NULL};
+          execargs[0] = com;
+          for (int i = 0; i < argsct; i++) {
+            execargs[i+1] = args[i];
+          }
+          if (-1 == execve(com, execargs, envp)) {
+            perror("Failed");
+          }
+        }
+
       }
       else
         fprintf(stderr, "%s: Command not found.\n", args[0]);
