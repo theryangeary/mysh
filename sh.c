@@ -241,23 +241,17 @@ int sh( int argc, char **argv, char **envp )
 
     else {
       /*  else  program to exec */
-      char* com;
+      char* com = malloc(BUFFERSIZE);
       /* find it */
-      if (0 == strncmp(thisDir, command, 1)) {
-        strcpy(com, command);
-      }
-      else if (0 == strncmp(upDir, command, 2)) {
-        strcpy(com, command);
-      }
-      else if (0 == strncmp(rootDir, command, 1)) {
-        strcpy(com, command);
+      if ((0 == strncmp(thisDir, command, 1)) || (0 == strncmp(rootDir, command, 1)) || (0 == strncmp(upDir, command, 2))) {
+        snprintf(com, strlen(command) + 1, "%s", command);
       }
       else {
         com = which(command, pathlist);
       }
       /* do fork(), execve() and waitpid() */
 
-      if(NULL != com) {
+      if(NULL != com && (0 == access(com, X_OK))) {
         printf("Executing %s\n", com);
         pid_t parent = getpid();
         pid_t pid = fork();
@@ -344,10 +338,11 @@ char *which(char *command, struct pathelement *pathlist )
       struct dirent* dirEntry;
       while (NULL != (dirEntry = readdir(folder))) {
         if (0 == strcmp(command, dirEntry->d_name)) {
-          char* result = (char*) malloc(sizeof(char) * (strlen(pathlist->element) + strlen(command)));
-          strcat(result, pathlist->element);
-          strcat(result, "/");
-          strcat(result, command);
+          char* result = (char*) malloc(sizeof(char) * BUFFERSIZE);
+          snprintf(result, BUFFERSIZE, "%s/%s", pathlist->element, command);
+          /* strcat(result, pathlist->element); */
+          /* strcat(result, "/"); */
+          /* strcat(result, command); */
           return result;
         }
       }
