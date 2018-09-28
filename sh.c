@@ -31,6 +31,8 @@ int sh( int argc, char **argv, char **envp )
   char* space = " ";
   char* path = "PATH";
   char* home = "HOME";
+  struct historyelement *lastcommand = NULL;
+  struct historyelement *newcommand = NULL;
 
   uid = getuid();
   password_entry = getpwuid(uid);               /* get passwd info */
@@ -62,6 +64,12 @@ int sh( int argc, char **argv, char **envp )
       continue;
     }
     commandline[strcspn(commandline, "\n")] = 0;// strip newline if it exists
+    newcommand = historyCommand(commandline);
+    newcommand->prev = lastcommand;
+    if (NULL != lastcommand) {
+      lastcommand->next = newcommand;
+    }
+    lastcommand = newcommand;
     const char space[2] = " ";
     command = strtok(commandline, space);
 
@@ -187,6 +195,22 @@ int sh( int argc, char **argv, char **envp )
     else if (0 == strcmp(command, "alias")) {
     }
     else if (0 == strcmp(command, "history")) {
+      printf("history\n");
+      int count = 10;
+      if (NULL != args[0]) {
+        count = atoi(args[0]);
+      }
+      struct historyelement *he = lastcommand;
+      while(NULL != he->prev && 0 < count) {
+        he = he->prev;
+        count--;
+      }
+      count = 0;
+      while(NULL != he->next) {
+        count++;
+        printf("%d: %s\n", count, he->command);
+        he = he->next;
+      }
     }
     else if (0 == strcmp(command, "setenv")) {
       printf("setenv\n");
