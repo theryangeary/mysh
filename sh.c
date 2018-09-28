@@ -279,6 +279,11 @@ int sh( int argc, char **argv, char **envp )
         fprintf(stderr, "%s: Command not found.\n", command);
     }
   }
+  do {
+    struct historyelement* prev = lastcommand->prev;
+    free(lastcommand);
+    lastcommand = prev;
+  } while(lastcommand->prev);
   free(prompt);
   free(commandline);
   free(owd);
