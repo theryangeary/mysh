@@ -274,6 +274,7 @@ int sh( int argc, char **argv, char **envp )
           }
         }
 
+        free(com);
       }
       else
         fprintf(stderr, "%s: Command not found.\n", command);
