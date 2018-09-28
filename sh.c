@@ -29,6 +29,8 @@ int sh( int argc, char **argv, char **envp )
   char* upDir = "..";
   char* thisDir = ".";
   char* space = " ";
+  char* path = "PATH";
+  char* home = "HOME";
 
   uid = getuid();
   password_entry = getpwuid(uid);               /* get passwd info */
@@ -194,10 +196,22 @@ int sh( int argc, char **argv, char **envp )
       else if (NULL != args[0]) {
         char* empty = "";
         int result = setenv(args[0], empty, 0);
-        printf("%d\n", result);
       }
       else {
         printenv(envp);
+      }
+      if (NULL != args[0] && 0 == strcmp(args[0], path)) {
+        struct pathelement *newPathlist = get_path();
+        struct pathelement *next;
+        while(NULL != pathlist->next) {
+          next = pathlist->next;
+          free(pathlist);
+          pathlist = next;
+        }
+        pathlist = newPathlist;
+      }
+      if (NULL != args[0] && 0 == strcmp(args[0], home)) {
+        homedir = getenv(home);
       }
     }
 
