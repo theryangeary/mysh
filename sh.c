@@ -346,9 +346,6 @@ char *which(char *command, struct pathelement *pathlist )
         if (0 == strcmp(command, dirEntry->d_name)) {
           char* result = (char*) malloc(sizeof(char) * BUFFERSIZE);
           snprintf(result, BUFFERSIZE, "%s/%s", pathlist->element, command);
-          /* strcat(result, pathlist->element); */
-          /* strcat(result, "/"); */
-          /* strcat(result, command); */
           return result;
         }
       }
