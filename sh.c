@@ -29,6 +29,10 @@ int sh( int argc, char **argv, char **envp )
   char* upDir = "..";
   char* thisDir = ".";
   char* space = " ";
+  char* path = "PATH";
+  char* home = "HOME";
+  struct historyelement *lastcommand = NULL;
+  struct historyelement *newcommand = NULL;
 
   uid = getuid();
   password_entry = getpwuid(uid);               /* get passwd info */
@@ -60,6 +64,12 @@ int sh( int argc, char **argv, char **envp )
       continue;
     }
     commandline[strcspn(commandline, "\n")] = 0;// strip newline if it exists
+    newcommand = historyCommand(commandline);
+    newcommand->prev = lastcommand;
+    if (NULL != lastcommand) {
+      lastcommand->next = newcommand;
+    }
+    lastcommand = newcommand;
     const char space[2] = " ";
     command = strtok(commandline, space);
 
@@ -170,12 +180,63 @@ int sh( int argc, char **argv, char **envp )
       }
     }
     else if (0 == strcmp(command, "printenv")) {
+      printf("printenv\n");
+      if (NULL != args[1]) {
+        printf("printenv: Too many arguments.\n");
+      }
+      else if (NULL != args[0]) {
+        char* result = getenv(args[0]);
+        printf("%s\n", result);
+      }
+      else {
+        printenv(envp);
+      }
     }
     else if (0 == strcmp(command, "alias")) {
     }
     else if (0 == strcmp(command, "history")) {
+      printf("history\n");
+      int count = 10;
+      if (NULL != args[0]) {
+        count = atoi(args[0]);
+      }
+      struct historyelement *he = lastcommand;
+      while(NULL != he->prev && 0 < count) {
+        he = he->prev;
+        count--;
+      }
+      count = 0;
+      while(NULL != he->next) {
+        count++;
+        printf("%d: %s\n", count, he->command);
+        he = he->next;
+      }
     }
     else if (0 == strcmp(command, "setenv")) {
+      printf("setenv\n");
+      if (NULL != args[1]) {
+        setenv(args[0], args[1], 1);
+      }
+      else if (NULL != args[0]) {
+        char* empty = "";
+        int result = setenv(args[0], empty, 0);
+      }
+      else {
+        printenv(envp);
+      }
+      if (NULL != args[0] && 0 == strcmp(args[0], path)) {
+        struct pathelement *newPathlist = get_path();
+        struct pathelement *next;
+        while(NULL != pathlist->next) {
+          next = pathlist->next;
+          free(pathlist);
+          pathlist = next;
+        }
+        pathlist = newPathlist;
+      }
+      if (NULL != args[0] && 0 == strcmp(args[0], home)) {
+        homedir = getenv(home);
+      }
     }
 
     else {
@@ -331,3 +392,8 @@ void list ( char *dir )
   closedir(folder);
 } /* list() */
 
+void printenv(char** envp) {
+  for (int i = 0; NULL != envp[i]; i++) {
+    printf("%s\n", envp[i]);
+  }
+}
