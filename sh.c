@@ -195,7 +195,6 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "alias")) {
       printf("alias\n");
-      printf("%d", argsct);
       if (NULL != args[1] && NULL != args[0]) {
         struct aliaselement* newAlias = addAlias(args[0], args+1, argsct-2);
         if (aliasList) {
@@ -209,9 +208,9 @@ int sh( int argc, char **argv, char **envp )
       else if (NULL == args[0]) {
         struct aliaselement* alias = aliasList;
         while(NULL != alias) {
-          printf("%s\t%s", alias->command, alias->expansion[0]);
+          printf("%s\t%s ", alias->command, alias->expansion[0]);
           for (int i = 1; NULL != alias->expansion[i]; i++) {
-            printf("%s", alias->expansion[i]);
+            printf("%s ", alias->expansion[i]);
           }
           printf("\n");
           alias = alias->next;
@@ -266,9 +265,28 @@ int sh( int argc, char **argv, char **envp )
       }
     }
 
+
+
     else {
       /*  else  program to exec */
       char* com = malloc(BUFFERSIZE);
+
+      // check if it matches an alias in the alias table
+      struct aliaselement* alias = aliasList;
+      while(alias) {
+        if (0 == strcmp(command, alias->command)) {
+          for (int i = MAXARGS - 1; i > 0; i--) {
+            args[i] = args[i-alias->parts];
+          }
+          for (int i = 0; i < alias->parts; i++) {
+            args[i] = alias->expansion[i + 1];
+          }
+          strncpy(command, alias->expansion[0], strlen(alias->expansion[0]));
+          break;
+        }
+        alias = alias->next;
+      }
+
       /* find it */
       if ((0 == strncmp(thisDir, command, 1)) || (0 == strncmp(rootDir, command, 1)) || (0 == strncmp(upDir, command, 2))) {
         snprintf(com, strlen(command) + 1, "%s", command);

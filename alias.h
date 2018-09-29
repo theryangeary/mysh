@@ -10,4 +10,5 @@ struct aliaselement
   char* command;
   char** expansion;
   struct aliaselement *next;
+  int parts;
 };

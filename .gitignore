@@ -6,3 +6,5 @@
 /.#get_path.c
 /core
 /history.o
+*.o
+*.o

@@ -9,7 +9,8 @@ struct aliaselement *addAlias(char* command, char** expansion, int argsct) {
   strcpy(a->command, command);
   for (int i = 0; i < argsct; i++) {
     a->expansion[i] = malloc(strlen(expansion[i]) * sizeof(char));
-    snprintf(a->expansion[i], strlen(expansion[i]) + 2, "%s ", expansion[i]);
+    snprintf(a->expansion[i], strlen(expansion[i]) + 2, "%s", expansion[i]);
+    a->parts = i;
   }
   a->next = NULL;
 }
