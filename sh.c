@@ -33,6 +33,7 @@ int sh( int argc, char **argv, char **envp )
   char* home = "HOME";
   struct historyelement *lastcommand = NULL;
   struct historyelement *newcommand = NULL;
+  struct aliaselement* aliasList = NULL;
 
   uid = getuid();
   password_entry = getpwuid(uid);               /* get passwd info */
@@ -193,6 +194,32 @@ int sh( int argc, char **argv, char **envp )
       }
     }
     else if (0 == strcmp(command, "alias")) {
+      printf("alias\n");
+      printf("%d", argsct);
+      if (NULL != args[1] && NULL != args[0]) {
+        struct aliaselement* newAlias = addAlias(args[0], args+1, argsct-2);
+        if (aliasList) {
+          newAlias->next = aliasList;
+          aliasList = newAlias;
+        }
+        else {
+          aliasList = newAlias;
+        }
+      }
+      else if (NULL == args[0]) {
+        struct aliaselement* alias = aliasList;
+        while(NULL != alias) {
+          printf("%s\t%s", alias->command, alias->expansion[0]);
+          for (int i = 1; NULL != alias->expansion[i]; i++) {
+            printf("%s", alias->expansion[i]);
+          }
+          printf("\n");
+          alias = alias->next;
+        }
+      }
+      else {
+        printf("alias: requires 0 arguments, or 2\n");
+      }
     }
     else if (0 == strcmp(command, "history")) {
       printf("history\n");
