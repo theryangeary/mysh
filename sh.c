@@ -299,7 +299,7 @@ int sh( int argc, char **argv, char **envp )
           for (int i = 0; i < alias->parts; i++) {
             args[i] = alias->expansion[i + 1];
           }
-          strncpy(command, alias->expansion[0], strlen(alias->expansion[0]));
+          strcpy(command, alias->expansion[0]);
           break;
         }
         alias = alias->next;
