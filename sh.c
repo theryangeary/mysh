@@ -335,9 +335,9 @@ int sh( int argc, char **argv, char **envp )
               }
             }
             globbuf.gl_offs = gl_offs_count;
-            glob(args[argsct-gl_offs_count-1], GLOB_DOOFFS, NULL, &globbuf);
+            glob(args[(gl_offs_count-1)], GLOB_DOOFFS, NULL, &globbuf);
             for (int i = 1; i < gl_offs_count; i++) {
-              glob(args[argsct-gl_offs_count], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
+              glob(args[gl_offs_count], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
             }
             globbuf.gl_pathv[0] = (char*) malloc(strlen(command));
             strcpy(globbuf.gl_pathv[0], command);
