@@ -323,7 +323,7 @@ int sh( int argc, char **argv, char **envp )
               execargs[i+1] = args[i];
             }
             if (-1 == execve(com, execargs, envp)) {
-              perror("Failed");
+              perror(command);
             }
           }
           else {
@@ -352,7 +352,7 @@ int sh( int argc, char **argv, char **envp )
               }
             }
             if (-1 == execvp(com, &globbuf.gl_pathv[0])) {
-              perror("Failed");
+              perror(command);
             }
             globfree(&globbuf);
           }
@@ -414,7 +414,7 @@ void cd(char *args, char* homedir, char* prevDir, char* pwd) {
     free(newPwd);
   }
   else {
-    perror("Something went wrong");
+    perror(args);
   }
   free(pd);
 }
