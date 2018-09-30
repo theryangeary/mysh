@@ -138,7 +138,12 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
-      cd(args[0], homedir, prevDir, pwd);
+      if (NULL != args[1]) {
+        printf("cd: Too many arguments.\n");
+      }
+      else {
+        cd(args[0], homedir, prevDir, pwd);
+      }
     }
     else if (0 == strcmp(command, "pwd")) {
       printf("pwd\n");
