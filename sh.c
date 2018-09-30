@@ -116,9 +116,12 @@ int sh( int argc, char **argv, char **envp )
       if (NULL == args[0]) {
         continue;
       }
-      char* result = which(args[0], pathlist);
-      if (NULL != result) {
-        printf("%s\n", result);
+      char* result;
+      for (int i = 0; i < argsct-1; i++) {
+        result = which(args[i], pathlist);
+        if (NULL != result) {
+          printf("%s\n", result);
+        }
       }
       free(result);
     }
