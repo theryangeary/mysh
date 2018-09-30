@@ -65,8 +65,13 @@ int sh( int argc, char **argv, char **envp )
     printf("%s [%s]>", prompt, pwd);
 
     /* get command line and process */
-    fgets(commandline,  MAX_CANON, stdin);
-    if (0 == strcmp(commandline, "\n")) {
+    char* fgetsResult;
+    fgetsResult = fgets(commandline,  MAX_CANON, stdin);
+    if (NULL == fgetsResult) {
+      printf("\n");
+      continue;
+    }
+    if (0 == strcmp(commandline, "\n") ) {
       continue;
     }
     commandline[strcspn(commandline, "\n")] = 0;// strip newline if it exists
@@ -323,7 +328,7 @@ int sh( int argc, char **argv, char **envp )
           int outputStatus = 0;
           waitpid(pid, &status, 0);
           if (0 != (outputStatus = WEXITSTATUS(status))) {
-            printf("%d\n", outputStatus);
+            printf("Exit %d\n", outputStatus);
           }
         }
         else {
