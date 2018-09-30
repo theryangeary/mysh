@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
+#include <glob.h>
 #include "sh.h"
 
 #define BUFFERSIZE 256
@@ -18,6 +19,7 @@ int sh( int argc, char **argv, char **envp )
 {
   char *prompt = calloc(PROMPTMAX, sizeof(char));
   char *commandline = calloc(MAX_CANON, sizeof(char));
+  char *commandlinecopy = calloc(MAX_CANON, sizeof(char));
   char *command, *arg, *commandpath, *p, *pwd, *owd, *prevDir;
   char **args = calloc(MAXARGS, sizeof(char*));
   char **execargs = calloc(MAXARGS + 1, sizeof(char*));
@@ -31,6 +33,8 @@ int sh( int argc, char **argv, char **envp )
   char* space = " ";
   char* path = "PATH";
   char* home = "HOME";
+  char* wildcard = "*";
+  char* dash = "-";
   struct historyelement *lastcommand = NULL;
   struct historyelement *newcommand = NULL;
   struct aliaselement* aliasList = NULL;
@@ -72,6 +76,7 @@ int sh( int argc, char **argv, char **envp )
     }
     lastcommand = newcommand;
     const char space[2] = " ";
+    strcpy(commandlinecopy, commandline);
     command = strtok(commandline, space);
 
     char* newArg = command;
@@ -311,11 +316,37 @@ int sh( int argc, char **argv, char **envp )
         else {
           char** const envp = {NULL};
           execargs[0] = com;
-          for (int i = 0; i < argsct; i++) {
-            execargs[i+1] = args[i];
+          if (0 == strstr(commandlinecopy, wildcard)) {
+            for (int i = 0; i < argsct; i++) {
+              execargs[i+1] = args[i];
+            }
+            if (-1 == execve(com, execargs, envp)) {
+              perror("Failed");
+            }
           }
-          if (-1 == execve(com, execargs, envp)) {
-            perror("Failed");
+          else {
+            glob_t globbuf;
+            int gl_offs_count = 1;
+            for (int i = 0; i < MAXARGS; i++) {
+              if (NULL != args[i] && 0 != strncmp(args[i], dash, 1)) {
+                gl_offs_count++;
+              }
+            }
+            globbuf.gl_offs = gl_offs_count;
+            glob(args[argsct-gl_offs_count], 0, NULL, &globbuf);
+            for (int i = 1; i < gl_offs_count; i++) {
+              glob(args[argsct-gl_offs_count], GLOB_APPEND, NULL, &globbuf);
+            }
+            globbuf.gl_pathv[0] = (char*) malloc(strlen(command));
+            strcpy(globbuf.gl_pathv[0], command);
+            for (int i = 0; i < argsct-gl_offs_count; i++) {
+              globbuf.gl_pathv[i + 1] = (char*) malloc(strlen(args[i]));
+              globbuf.gl_pathv[i + 1] = args[i];
+            }
+            if (-1 == execvp(com, &globbuf.gl_pathv[0])) {
+              perror("Failed");
+            }
+            globfree(&globbuf);
           }
         }
 
@@ -332,6 +363,7 @@ int sh( int argc, char **argv, char **envp )
   } while(lastcommand->prev);
   free(prompt);
   free(commandline);
+  free(commandlinecopy);
   free(owd);
   free(pwd);
   free(prevDir);
