@@ -34,6 +34,7 @@ int sh( int argc, char **argv, char **envp )
   char* path = "PATH";
   char* home = "HOME";
   char* wildcard = "*";
+  char* singlewildcard = "?";
   char* dash = "-";
   struct historyelement *lastcommand = NULL;
   struct historyelement *newcommand = NULL;
@@ -316,7 +317,8 @@ int sh( int argc, char **argv, char **envp )
         else {
           char** const envp = {NULL};
           execargs[0] = com;
-          if (0 == strstr(commandlinecopy, wildcard)) {
+          if (0 == strstr(commandlinecopy, wildcard) &&
+              0 == strstr(commandlinecopy, singlewildcard)) {
             for (int i = 0; i < argsct; i++) {
               execargs[i+1] = args[i];
             }
