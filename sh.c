@@ -127,10 +127,14 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "where")) {
       printf("where\n");
-      if (NULL == args[0]) {
-        continue;
+      for (int i = 0; i < argsct; i++) {
+        if (NULL == args[i]) {
+          continue;
+        }
+        else {
+          where(args[i], pathlist);
+        }
       }
-      where(args[0], pathlist);
     }
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
