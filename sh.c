@@ -329,21 +329,27 @@ int sh( int argc, char **argv, char **envp )
           else {
             glob_t globbuf;
             int gl_offs_count = 1;
-            for (int i = 0; i < MAXARGS; i++) {
-              if (NULL != args[i] && 0 != strncmp(args[i], dash, 1)) {
+            for (int i = 0; i < argsct - 1; i++) {
+              if (0 == strncmp(args[i], dash, 1)) {
                 gl_offs_count++;
               }
             }
             globbuf.gl_offs = gl_offs_count;
-            glob(args[argsct-gl_offs_count], 0, NULL, &globbuf);
+            glob(args[argsct-gl_offs_count-1], GLOB_DOOFFS, NULL, &globbuf);
             for (int i = 1; i < gl_offs_count; i++) {
-              glob(args[argsct-gl_offs_count], GLOB_APPEND, NULL, &globbuf);
+              glob(args[argsct-gl_offs_count], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
             }
             globbuf.gl_pathv[0] = (char*) malloc(strlen(command));
             strcpy(globbuf.gl_pathv[0], command);
-            for (int i = 0; i < argsct-gl_offs_count; i++) {
-              globbuf.gl_pathv[i + 1] = (char*) malloc(strlen(args[i]));
-              globbuf.gl_pathv[i + 1] = args[i];
+            int idx = 1;
+            for (int i = 0; i < MAXARGS; i++) {
+              if (NULL != args[i] &&
+                  0 == strstr(args[i], wildcard) &&
+                  0 == strstr(args[i], singlewildcard)) {
+                globbuf.gl_pathv[idx] = (char*) malloc(strlen(args[i]));
+                globbuf.gl_pathv[idx] = args[i];
+                idx++;
+              }
             }
             if (-1 == execvp(com, &globbuf.gl_pathv[0])) {
               perror("Failed");
