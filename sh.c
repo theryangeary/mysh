@@ -425,6 +425,15 @@ int sh( int argc, char **argv, char **envp )
   free(owd);
   free(pwd);
   free(prevDir);
+  for (int i = 0; i < MAXARGS + 1; i++) {
+    if (NULL!= execargs[i]);
+    free(execargs[i]);
+  }
+  free(execargs);
+  for (int i = 0; i < MAXARGS; i++) {
+    if (NULL!= args[i]);
+    free(args[i]);
+  }
   free(args);
   return 0;
 } /* sh() */
@@ -450,6 +459,7 @@ void cd(char *args, char* homedir, char* prevDir, char* pwd) {
   // - = go back
   else if ('-' == args[0]) {
     if (NULL == prevDir || '\0' == prevDir[0]) {
+      free(pd);
       return ;
     }
     result = chdir(prevDir);
@@ -486,11 +496,13 @@ char *which(char *command, struct pathelement *pathlist )
         if (0 == strcmp(command, dirEntry->d_name)) {
           char* result = (char*) malloc(sizeof(char) * BUFFERSIZE);
           snprintf(result, BUFFERSIZE, "%s/%s", pathlist->element, command);
+          closedir(folder);
           return result;
         }
       }
     }
     pathlist = pathlist->next;
+    closedir(folder);
   }
   return NULL;
 } /* which() */
@@ -513,6 +525,7 @@ char *where(char *command, struct pathelement *pathlist )
         }
       }
     }
+    closedir(folder);
     pathlist = pathlist->next;
   }
   return NULL;
