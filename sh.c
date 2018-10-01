@@ -87,6 +87,7 @@ int sh( int argc, char **argv, char **envp )
 
     char* newArg = command;
     int argCounter = 0;
+    /* for (int i = 0; i < MAXARGS; i++) { */
     while (newArg != NULL) {
       newArg = strtok(NULL, space);
       args[argCounter] = newArg;
@@ -118,9 +119,11 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "which")) {
       printf("which\n");
+      // empty case
       if (NULL == args[0]) {
         continue;
       }
+      // run which for each argument
       char* result;
       for (int i = 0; i < argsct-1; i++) {
         result = which(args[i], pathlist);
@@ -132,6 +135,7 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "where")) {
       printf("where\n");
+      // run where for each argument
       for (int i = 0; i < argsct; i++) {
         if (NULL == args[i]) {
           continue;
@@ -143,9 +147,11 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "cd")) {
       printf("cd\n");
-      if (NULL != args[1]) {
+      // cd should never have more than one argument (argsct includes the command name)
+      if (argsct > 2) {
         printf("cd: Too many arguments.\n");
       }
+      // chdir to the given arg
       else {
         cd(args[0], homedir, prevDir, pwd);
       }
@@ -166,9 +172,11 @@ int sh( int argc, char **argv, char **envp )
         char* prevCopy = calloc(sizeof(char), strlen(prevDir) + 1);
         strcpy(prevCopy, prevDir);
         for (int i = 0; i < argsct - 1; i++) {
+          // changing to the dir allows for absolute, relative, ~, -, etc.
           cd(args[i], homedir, prevCopy, pwd);
           printf("\n%s:\n\n", pwd);
           list(pwd);
+          // after listing, go back to the original directory
           cd("-", homedir, prevCopy, pwd);
         }
         free(prevCopy);
@@ -181,12 +189,15 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "kill")) {
       printf("kill\n");
+      // if only one arg, send sigterm
       if (2 == argsct) {
         int pid = atoi(args[0]);
         kill(pid, 15);
       }
+      // otherwise send specified signal
       else if (3 == argsct) {
         int pid = atoi(args[1]);
+        // move past dash in flag
         args[0]++;
         int sig = atoi(args[0]++);
         printf("%d", sig);
@@ -195,9 +206,11 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "prompt")) {
       printf("prompt\n");
+      // if prompt given, apply it
       if (NULL != args[0]) {
         strncpy(prompt, args[0], PROMPTMAX);
       }
+      // otherwise prompt for one
       else {
         printf("prompt: ");
         fgets(prompt, PROMPTMAX, stdin);
@@ -206,19 +219,23 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "printenv")) {
       printf("printenv\n");
+      // at most one arg
       if (NULL != args[1]) {
         printf("printenv: Too many arguments.\n");
       }
+      // print requested var
       else if (NULL != args[0]) {
         char* result = getenv(args[0]);
         printf("%s\n", result);
       }
+      //print all vars
       else {
         printenv(envp);
       }
     }
     else if (0 == strcmp(command, "alias")) {
       printf("alias\n");
+      // given a complete alias, create one
       if (NULL != args[1] && NULL != args[0]) {
         struct aliaselement* newAlias = addAlias(args[0], args+1, argsct-2);
         if (aliasList) {
@@ -229,6 +246,7 @@ int sh( int argc, char **argv, char **envp )
           aliasList = newAlias;
         }
       }
+      // given no alias, print existing ones
       else if (NULL == args[0]) {
         struct aliaselement* alias = aliasList;
         while(NULL != alias) {
@@ -240,22 +258,26 @@ int sh( int argc, char **argv, char **envp )
           alias = alias->next;
         }
       }
+      // otherwise, give usage info
       else {
         printf("alias: requires 0 arguments, or 2\n");
       }
     }
     else if (0 == strcmp(command, "history")) {
       printf("history\n");
+      // default to 10 entries
       int count = 10;
       if (NULL != args[0]) {
         count = atoi(args[0]);
       }
       struct historyelement *he = lastcommand;
+      // back up [count] entries
       while(NULL != he->prev && 0 < count) {
         he = he->prev;
         count--;
       }
       count = 0;
+      // print out [count] entries
       while(NULL != he->next) {
         count++;
         printf("%d: %s\n", count, he->command);
@@ -264,16 +286,20 @@ int sh( int argc, char **argv, char **envp )
     }
     else if (0 == strcmp(command, "setenv")) {
       printf("setenv\n");
+      // set given var
       if (NULL != args[1]) {
         setenv(args[0], args[1], 1);
       }
+      // or, if only one arg, set var to empty
       else if (NULL != args[0]) {
         char* empty = "";
         int result = setenv(args[0], empty, 0);
       }
+      // or, if no args, print all var
       else {
         printenv(envp);
       }
+      // if path changed, update path
       if (NULL != args[0] && 0 == strcmp(args[0], path)) {
         struct pathelement *newPathlist = get_path();
         struct pathelement *next;
@@ -284,6 +310,7 @@ int sh( int argc, char **argv, char **envp )
         }
         pathlist = newPathlist;
       }
+      // if home changed, update home
       if (NULL != args[0] && 0 == strcmp(args[0], home)) {
         homedir = getenv(home);
       }
@@ -324,6 +351,7 @@ int sh( int argc, char **argv, char **envp )
         printf("Executing %s\n", com);
         pid_t parent = getpid();
         pid_t pid = fork();
+        // parent
         if (pid > 0) {
           int status;
           int outputStatus = 0;
@@ -332,9 +360,11 @@ int sh( int argc, char **argv, char **envp )
             printf("Exit %d\n", outputStatus);
           }
         }
+        // child
         else {
           char** const envp = {NULL};
           execargs[0] = com;
+          // if not wildcards, run the program
           if (0 == strstr(commandlinecopy, wildcard) &&
               0 == strstr(commandlinecopy, singlewildcard)) {
             for (int i = 0; i < argsct; i++) {
@@ -344,6 +374,7 @@ int sh( int argc, char **argv, char **envp )
               perror(command);
             }
           }
+          // if there are wildcards, expand them all
           else {
             glob_t globbuf;
             int gl_offs_count = 1;
@@ -352,6 +383,7 @@ int sh( int argc, char **argv, char **envp )
                 gl_offs_count++;
               }
             }
+            // see glob(3)
             globbuf.gl_offs = gl_offs_count;
             glob(args[(gl_offs_count-1)], GLOB_DOOFFS, NULL, &globbuf);
             for (int i = 1; i < gl_offs_count; i++) {
@@ -402,9 +434,11 @@ void cd(char *args, char* homedir, char* prevDir, char* pwd) {
   char* pd;
   pd = calloc(sizeof(char), BUFFERSIZE);
   getcwd(pd, BUFFERSIZE);
+  // no args = cd home
   if (NULL == args) {
     result = chdir(homedir);
   }
+  // ~ = home
   else if ('~' == args[0]) {
     args++;
     char* path = calloc(sizeof(char), strlen(homedir) + strlen(args) + 1);
@@ -413,17 +447,20 @@ void cd(char *args, char* homedir, char* prevDir, char* pwd) {
     result = chdir(path);
     free(path);
   }
+  // - = go back
   else if ('-' == args[0]) {
     if (NULL == prevDir || '\0' == prevDir[0]) {
       return ;
     }
     result = chdir(prevDir);
   }
+  // otherwise go where they said
   else {
     result = chdir(args);
   }
   if (0 == result) {
     strcpy(prevDir, pd);
+    // set prevDir for cd -
     prevDir[strlen(pd)] = '\0';
     char* newPwd = calloc(sizeof(char), BUFFERSIZE);
     getcwd(newPwd, BUFFERSIZE);
