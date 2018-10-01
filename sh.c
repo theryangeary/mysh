@@ -186,9 +186,10 @@ int sh( int argc, char **argv, char **envp )
         kill(pid, 15);
       }
       else if (3 == argsct) {
-        int pid = atoi(args[0]);
-        args[1]++;
-        int sig = atoi(args[1]);
+        int pid = atoi(args[1]);
+        args[0]++;
+        int sig = atoi(args[0]++);
+        printf("%d", sig);
         kill(pid, sig);
       }
     }
