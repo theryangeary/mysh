@@ -9,3 +9,4 @@
 *.o
 *.o
 /vgcore.10395
+*core*

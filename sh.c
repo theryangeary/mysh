@@ -114,6 +114,37 @@ int sh( int argc, char **argv, char **envp )
     }
 
     if (0 == strcmp(command, "exit")) {
+      while(lastcommand->prev) {
+        struct historyelement* prev = lastcommand->prev;
+        free(lastcommand->command);
+        free(lastcommand);
+        lastcommand = prev;
+      } 
+      free(lastcommand->command);
+      free(lastcommand);
+      while(pathlist->next) {
+        struct pathelement* next = pathlist->next;
+        free(pathlist);
+        pathlist = next;
+      }
+      free(pathlist);
+      free(prompt);
+      free(commandline);
+      free(commandlinecopy);
+      free(owd);
+      free(pwd);
+      free(prevDir);
+      for (int i = 0; i < MAXARGS + 1; i++) {
+        if (NULL!= execargs[i]);
+        free(execargs[i]);
+      }
+      free(execargs);
+      for (int i = 0; i < MAXARGS; i++) {
+        if (NULL!= args[i]);
+        free(args[i]);
+      }
+      free(args);
+
       printf("exit\n");
       break;
     }
@@ -389,7 +420,7 @@ int sh( int argc, char **argv, char **envp )
             for (int i = 1; i < gl_offs_count; i++) {
               glob(args[gl_offs_count], GLOB_DOOFFS | GLOB_APPEND, NULL, &globbuf);
             }
-            globbuf.gl_pathv[0] = (char*) malloc(strlen(command));
+            globbuf.gl_pathv[0] = (char*) malloc(strlen(command) + 1);
             strcpy(globbuf.gl_pathv[0], command);
             int idx = 1;
             for (int i = 0; i < MAXARGS; i++) {
@@ -407,35 +438,12 @@ int sh( int argc, char **argv, char **envp )
             globfree(&globbuf);
           }
         }
-
-        free(com);
       }
       else
         fprintf(stderr, "%s: Command not found.\n", command);
     }
   }
-  while(lastcommand->prev) {
-    struct historyelement* prev = lastcommand->prev;
-    free(lastcommand);
-    lastcommand = prev;
-  } 
-  free(prompt);
-  free(commandline);
-  free(commandlinecopy);
-  free(owd);
-  free(pwd);
-  free(prevDir);
-  for (int i = 0; i < MAXARGS + 1; i++) {
-    if (NULL!= execargs[i]);
-    free(execargs[i]);
-  }
-  free(execargs);
-  for (int i = 0; i < MAXARGS; i++) {
-    if (NULL!= args[i]);
-    free(args[i]);
-  }
-  free(args);
-  return 0;
+   return 0;
 } /* sh() */
 
 void cd(char *args, char* homedir, char* prevDir, char* pwd) {
@@ -516,10 +524,8 @@ char *where(char *command, struct pathelement *pathlist )
       struct dirent* dirEntry;
       while (NULL != (dirEntry = readdir(folder))) {
         if (0 == strcmp(command, dirEntry->d_name)) {
-          char* result = (char*) malloc(sizeof(char) * (strlen(pathlist->element) + strlen(command)));
-          strcat(result, pathlist->element);
-          strcat(result, "/");
-          strcat(result, command);
+          char* result = (char*) malloc(sizeof(char) * BUFFERSIZE);
+          snprintf(result, BUFFERSIZE, "%s/%s", pathlist->element, command);
           printf("%s\n", result);
           free(result);
         }
